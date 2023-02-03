@@ -65,6 +65,7 @@ class SerialReader:
         while 1:
             msg = "identify offset=%d count=%d" % (len(identify_data), 40)
             try:
+                logging.info("send identity request -> %s", msg)
                 params = self.send_with_response(msg, 'identify_response')
             except error as e:
                 logging.exception("%sWait for identify_response",
@@ -175,7 +176,7 @@ class SerialReader:
                 break
     def connect_uart(self, serialport, baud, rts=True):
         # Initial connection
-        logging.info("%sStarting serial connect", self.warn_prefix)
+        logging.info("%sStarting serial connect to %s [b:%s]", self.warn_prefix, serialport, baud)
         start_time = self.reactor.monotonic()
         while 1:
             if self.reactor.monotonic() > start_time + 90.:
