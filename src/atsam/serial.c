@@ -13,11 +13,11 @@
 
 // Serial port pins
 #if CONFIG_MACH_SAM3X
-#define UARTx_IRQn USART1_IRQn
+#define USARTx_IRQn USART1_IRQn
 static Usart * const Port = USART1;
 static const uint32_t Pmc_id = ID_USART1;
 static const uint32_t rx_pin = GPIO('A', 12), tx_pin = GPIO('A', 13);
-static const char uart_periph = 'A';
+static const char usart_periph = 'A';
 DECL_CONSTANT_STR("RESERVE_PINS_serial", "PA12,PA13");
 #elif CONFIG_MACH_SAM4S
 #define UARTx_IRQn UART1_IRQn
@@ -43,7 +43,7 @@ DECL_CONSTANT_STR("RESERVE_PINS_serial", "PD25,PD26");
 #endif
 
 void
-UARTx_Handler(void)
+USARTx_Handler(void)
 {
     uint32_t status = Port->US_CSR;
     if (status & US_CSR_RXRDY)
@@ -67,8 +67,8 @@ serial_enable_tx_irq(void)
 void
 serial_init(void)
 {
-    gpio_peripheral(rx_pin, uart_periph, 1);
-    gpio_peripheral(tx_pin, uart_periph, 0);
+    gpio_peripheral(rx_pin, usart_periph, 1);
+    gpio_peripheral(tx_pin, usart_periph, 0);
 
     // Reset uart
     enable_pclock(Pmc_id);
@@ -80,7 +80,7 @@ serial_init(void)
     Port->US_MR = (US_MR_PAR_NO | US_MR_CHMODE_NORMAL);
     Port->US_BRGR = get_pclock_frequency(Pmc_id) / (16 * CONFIG_SERIAL_BAUD);
     Port->US_IER = US_IER_RXRDY;
-    armcm_enable_irq(UARTx_Handler, UARTx_IRQn, 0);
+    armcm_enable_irq(USARTx_Handler, USARTx_IRQn, 0);
     Port->US_CR = US_CR_RXEN | US_CR_TXEN;
 }
 DECL_INIT(serial_init);
