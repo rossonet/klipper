@@ -34,6 +34,7 @@ static struct {
 static uint_fast8_t
 periodic_event(struct timer *t)
 {
+    debug_msg("event...");
     // Make sure the stats task runs periodically
     sched_wake_tasks();
     // Reschedule timer

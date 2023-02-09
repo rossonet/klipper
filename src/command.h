@@ -5,6 +5,11 @@
 #include <stddef.h>
 #include <stdint.h> // uint8_t
 #include "ctr.h" // DECL_CTR
+//#if (CONFIG_USB_DEBUG)
+#include "board/usb_cdc.h" // output secondario
+#define debug_msg(message) \
+	console_sendlog(message)
+//#endif
 
 // Declare a function to run when the specified command is received
 #define DECL_COMMAND_FLAGS(FUNC, FLAGS, MSG)                    \
@@ -81,6 +86,7 @@ int_fast8_t command_find_block(uint8_t *buf, uint_fast8_t buf_len
                                , uint_fast8_t *pop_count);
 void command_dispatch(uint8_t *buf, uint_fast8_t msglen);
 void command_send_ack(void);
+void debug_msg(char *message);
 int_fast8_t command_find_and_dispatch(uint8_t *buf, uint_fast8_t buf_len
                                       , uint_fast8_t *pop_count);
 

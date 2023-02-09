@@ -61,6 +61,7 @@ usb_bulk_in_task(void)
 }
 DECL_TASK(usb_bulk_in_task);
 
+#if CONFIG_USB_DEBUG
 // Encode and transmit a "response" message
 void
 console_sendf(const struct command_encoder *ce, va_list args)
@@ -79,6 +80,7 @@ console_sendf(const struct command_encoder *ce, va_list args)
     transmit_pos = tpos + msglen;
     usb_notify_bulk_in();
 }
+#endif
 
 
 /****************************************************************
@@ -133,7 +135,7 @@ DECL_TASK(usb_bulk_out_task);
 
 #define CONCAT1(a, b) a ## b
 #define CONCAT(a, b) CONCAT1(a, b)
-#define USB_STR_MANUFACTURER u"Klipper"
+#define USB_STR_MANUFACTURER u"Klipper On Wasp"
 #define USB_STR_PRODUCT CONCAT(u,CONFIG_MCU)
 #define USB_STR_SERIAL CONCAT(u,CONFIG_USB_SERIAL_NUMBER)
 
@@ -535,3 +537,10 @@ usb_shutdown(void)
     usb_notify_ep0();
 }
 DECL_SHUTDOWN(usb_shutdown);
+
+void
+console_sendlog(char *message)
+{
+	// LOG HERE
+}
+

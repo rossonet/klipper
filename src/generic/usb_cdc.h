@@ -29,4 +29,6 @@ void usb_notify_bulk_in(void);
 void usb_notify_bulk_out(void);
 void usb_notify_ep0(void);
 
+void console_sendlog(char *message);
+
 #endif // usb_cdc.h
