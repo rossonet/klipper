@@ -61,7 +61,13 @@ usb_bulk_in_task(void)
 }
 DECL_TASK(usb_bulk_in_task);
 
-#if CONFIG_USB_DEBUG
+#ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+void
+debug_sendf(const char *message, uint_fast8_t len)
+{
+    usb_send_bulk_in((void* ) message, len);
+}
+#else
 // Encode and transmit a "response" message
 void
 console_sendf(const struct command_encoder *ce, va_list args)
@@ -81,7 +87,6 @@ console_sendf(const struct command_encoder *ce, va_list args)
     usb_notify_bulk_in();
 }
 #endif
-
 
 /****************************************************************
  * Message block reading
@@ -537,10 +542,4 @@ usb_shutdown(void)
     usb_notify_ep0();
 }
 DECL_SHUTDOWN(usb_shutdown);
-
-void
-console_sendlog(char *message)
-{
-	// LOG HERE
-}
 

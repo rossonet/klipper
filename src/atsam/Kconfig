@@ -102,6 +102,10 @@ choice
     config ATSAM_SERIAL
         bool "Serial"
         select SERIAL
+    config ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+        bool "Serial with debug over USB"
+        select SERIAL
+        select USBSERIAL
 endchoice
 
 endif

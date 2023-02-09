@@ -12,6 +12,9 @@
 #include "board/pgm.h" // READP
 #include "command.h" // output_P
 #include "sched.h" // sched_is_shutdown
+#ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+#include "misc.h" // debug
+#endif
 
 static uint8_t next_sequence = MESSAGE_DEST;
 
@@ -74,6 +77,9 @@ uint8_t *
 command_parsef(uint8_t *p, uint8_t *maxend
                , const struct command_parser *cp, uint32_t *args)
 {
+    #ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+    debug_sendf("received command\n", 17);
+    #endif
     uint_fast8_t num_params = READP(cp->num_params);
     const uint8_t *param_types = READP(cp->param_types);
     while (num_params--) {

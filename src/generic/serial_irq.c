@@ -93,6 +93,7 @@ DECL_TASK(console_task);
 void
 console_sendf(const struct command_encoder *ce, va_list args)
 {
+    //console_debug_sendf(ce, args);
     // Verify space for message
     uint_fast8_t tpos = readb(&transmit_pos), tmax = readb(&transmit_max);
     if (tpos >= tmax) {
