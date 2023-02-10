@@ -15,7 +15,7 @@
 #if CONFIG_MACH_SAM3X
 #define USARTx_IRQn USART1_IRQn
 static Usart * const Port = USART1;
-static const uint32_t Pmc_id = ID_USART1;
+static const uint32_t Pmc_id = 18;
 static const uint32_t rx_pin = GPIO('A', 12), tx_pin = GPIO('A', 13);
 static const char usart_periph = 'A';
 DECL_CONSTANT_STR("RESERVE_PINS_serial", "PA12,PA13");

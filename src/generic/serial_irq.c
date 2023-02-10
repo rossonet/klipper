@@ -26,11 +26,18 @@ DECL_CONSTANT("RECEIVE_WINDOW", RX_BUFFER_SIZE);
 void
 serial_rx_byte(uint_fast8_t data)
 {
+    #ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+    debug_sendf("RX", 2);
+    #endif
     if (data == MESSAGE_SYNC)
         sched_wake_tasks();
-    if (receive_pos >= sizeof(receive_buf))
+    if (receive_pos >= sizeof(receive_buf)){
+	#ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+        debug_sendf("OVERFLOW\n", 9);
+        #endif
         // Serial overflow - ignore it as crc error will force retransmit
         return;
+    }
     receive_buf[receive_pos++] = data;
 }
 
@@ -38,6 +45,9 @@ serial_rx_byte(uint_fast8_t data)
 int
 serial_get_tx_byte(uint8_t *pdata)
 {
+    #ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+    debug_sendf("TX", 2);
+    #endif
     if (transmit_pos >= transmit_max)
         return -1;
     *pdata = transmit_buf[transmit_pos++];
@@ -74,6 +84,9 @@ console_pop_input(uint_fast8_t len)
 void
 console_task(void)
 {
+    #ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
+    debug_sendf("TASK", 4);
+    #endif
     uint_fast8_t rpos = readb(&receive_pos), pop_count;
     int_fast8_t ret = command_find_block(receive_buf, rpos, &pop_count);
     if (ret > 0)
