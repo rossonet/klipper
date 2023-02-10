@@ -34,9 +34,6 @@ static struct {
 static uint_fast8_t
 periodic_event(struct timer *t)
 {
-    #ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
-    debug_sendf("periodic_event fired\n", 21);
-    #endif
     // Make sure the stats task runs periodically
     sched_wake_tasks();
     // Reschedule timer
