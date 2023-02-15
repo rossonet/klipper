@@ -12,15 +12,13 @@
 #include "board/pgm.h" // READP
 #include "command.h" // output_P
 #include "sched.h" // sched_is_shutdown
-#ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
-#include "misc.h" // debug
-#endif
 
 static uint8_t next_sequence = MESSAGE_DEST;
 
 static uint32_t
 command_encode_ptr(void *p)
 {
+    //debug_sendf(" CEP ", 5);
     if (sizeof(size_t) > sizeof(uint32_t))
         return p - console_receive_buffer();
     return (size_t)p;
@@ -29,6 +27,7 @@ command_encode_ptr(void *p)
 void *
 command_decode_ptr(uint32_t v)
 {
+    //debug_sendf(" CDP ", 5);
     if (sizeof(size_t) > sizeof(uint32_t))
         return console_receive_buffer() + v;
     return (void*)(size_t)v;
@@ -43,6 +42,7 @@ command_decode_ptr(uint32_t v)
 static uint8_t *
 encode_int(uint8_t *p, uint32_t v)
 {
+    //debug_sendf(" CEI ", 5);
     int32_t sv = v;
     if (sv < (3L<<5)  && sv >= -(1L<<5))  goto f4;
     if (sv < (3L<<12) && sv >= -(1L<<12)) goto f3;
@@ -60,6 +60,7 @@ f4: *p++ = v & 0x7f;
 static uint32_t
 parse_int(uint8_t **pp)
 {
+    //debug_sendf(" CPI ", 5);
     uint8_t *p = *pp, c = *p++;
     uint32_t v = c & 0x7f;
     if ((c & 0x60) == 0x60)
@@ -77,9 +78,7 @@ uint8_t *
 command_parsef(uint8_t *p, uint8_t *maxend
                , const struct command_parser *cp, uint32_t *args)
 {
-    #ifdef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
-    debug_sendf("received command\n", 17);
-    #endif
+   //@debug_sendf(" command_parsef ", 16);
     uint_fast8_t num_params = READP(cp->num_params);
     const uint8_t *param_types = READP(cp->param_types);
     while (num_params--) {
@@ -117,6 +116,7 @@ error:
 static uint_fast8_t
 command_encodef(uint8_t *buf, const struct command_encoder *ce, va_list args)
 {
+    //debug_sendf(" ECF ", 5);
     uint_fast8_t max_size = READP(ce->max_size);
     if (max_size <= MESSAGE_MIN)
         // Ack/Nak message
@@ -181,6 +181,7 @@ error:
 static void
 command_add_frame(uint8_t *buf, uint_fast8_t msglen)
 {
+    //debug_sendf(" CAF ", 5);
     buf[MESSAGE_POS_LEN] = msglen;
     buf[MESSAGE_POS_SEQ] = next_sequence;
     uint16_t crc = crc16_ccitt(buf, msglen - MESSAGE_TRAILER_SIZE);
@@ -194,6 +195,7 @@ uint_fast8_t
 command_encode_and_frame(uint8_t *buf, const struct command_encoder *ce
                          , va_list args)
 {
+    //debug_sendf(" CEAF ", 6);
     uint_fast8_t msglen = command_encodef(buf, ce, args);
     command_add_frame(buf, msglen);
     return msglen;
@@ -205,6 +207,7 @@ static uint8_t in_sendf;
 void
 command_sendf(const struct command_encoder *ce, ...)
 {
+   //@debug_sendf(" command_sendf ", 15);
     if (readb(&in_sendf))
         // This sendf call was made from an irq handler while the main
         // code was already in sendf - just drop this sendf request.
@@ -235,6 +238,7 @@ DECL_SHUTDOWN(sendf_shutdown);
 static const struct command_parser *
 command_lookup_parser(uint_fast8_t cmdid)
 {
+   //@debug_sendf(" command_lookup_parser ", 23);
     if (!cmdid || cmdid >= READP(command_index_size))
         shutdown("Invalid command");
     return &command_index[cmdid];
@@ -251,6 +255,7 @@ enum { CF_NEED_SYNC=1<<0, CF_NEED_VALID=1<<1 };
 int_fast8_t
 command_find_block(uint8_t *buf, uint_fast8_t buf_len, uint_fast8_t *pop_count)
 {
+   //@debug_sendf((const char*) buf, buf_len);
     static uint8_t sync_state;
     if (buf_len && sync_state & CF_NEED_SYNC)
         goto need_sync;
@@ -282,9 +287,11 @@ command_find_block(uint8_t *buf, uint_fast8_t buf_len, uint_fast8_t *pop_count)
     return 1;
 
 need_more_data:
+    debug_sendf("+", 1);
     *pop_count = 0;
     return 0;
 error:
+    debug_sendf(" CP_error ", 10);
     if (buf[0] == MESSAGE_SYNC) {
         // Ignore (do not nak) leading SYNC bytes
         *pop_count = 1;
@@ -293,6 +300,7 @@ error:
     sync_state |= CF_NEED_SYNC;
 need_sync: ;
     // Discard bytes until next SYNC found
+    debug_sendf(" CP_need_sync ", 14);
     uint8_t *next_sync = memchr(buf, MESSAGE_SYNC, buf_len);
     if (next_sync) {
         sync_state &= ~CF_NEED_SYNC;
@@ -304,6 +312,7 @@ need_sync: ;
         return -1;
     sync_state |= CF_NEED_VALID;
 nak:
+    debug_sendf(" CP_nak ", 8);
     command_sendf(&encode_acknak);
     return -1;
 }
@@ -312,6 +321,7 @@ nak:
 void
 command_dispatch(uint8_t *buf, uint_fast8_t msglen)
 {
+   //@debug_sendf(" command_dispatch ", 18);
     uint8_t *p = &buf[MESSAGE_HEADER_SIZE];
     uint8_t *msgend = &buf[msglen-MESSAGE_TRAILER_SIZE];
     while (p < msgend) {
@@ -333,6 +343,7 @@ command_dispatch(uint8_t *buf, uint_fast8_t msglen)
 void
 command_send_ack(void)
 {
+   //@debug_sendf(" command_send_ack ", 18);
     command_sendf(&encode_acknak);
 }
 
@@ -341,6 +352,7 @@ int_fast8_t
 command_find_and_dispatch(uint8_t *buf, uint_fast8_t buf_len
                           , uint_fast8_t *pop_count)
 {
+   //@debug_sendf(" command_find_and_dispatch ", 27);
     int_fast8_t ret = command_find_block(buf, buf_len, pop_count);
     if (ret > 0) {
         command_dispatch(buf, *pop_count);

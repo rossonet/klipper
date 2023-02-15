@@ -15,6 +15,7 @@
 #include "sched.h" // sched_check_periodic
 #include "stepper.h" // stepper_event
 
+
 static struct timer periodic_timer, sentinel_timer, deleted_timer;
 
 static struct {

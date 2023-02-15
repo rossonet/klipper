@@ -342,6 +342,7 @@ class MessageParser:
             self._error("Unable to extract params from: %s", msgname)
         try:
             cmd = mp.encode_by_name(**argparts)
+            logging.debug("CMD -> %s", cmd);
         except error as e:
             raise
         except:

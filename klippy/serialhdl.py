@@ -87,7 +87,7 @@ class SerialReader:
         self.background_thread.start()
         # Obtain and load the data dictionary from the firmware
         completion = self.reactor.register_callback(self._get_identify_data)
-        identify_data = completion.wait(self.reactor.monotonic() + 5.)
+        identify_data = completion.wait(self.reactor.monotonic() + 50.)
         if identify_data is None:
             logging.info("%sTimeout on connect", self.warn_prefix)
             self.disconnect()
@@ -318,6 +318,7 @@ class SerialRetryCommand:
                 self.serial.raw_send(cmd, minclock, reqclock, cmd_queue)
             self.serial.raw_send_wait_ack(cmds[-1], minclock, reqclock,
                                           cmd_queue)
+            logging.debug("+++ ack received")
             params = self.last_params
             if params is not None:
                 self.serial.register_response(None, self.name, self.oid)

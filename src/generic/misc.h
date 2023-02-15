@@ -6,9 +6,7 @@
 
 struct command_encoder;
 void console_sendf(const struct command_encoder *ce, va_list args);
-#if CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
 void debug_sendf(const char *message, uint_fast8_t len);
-#endif
 void *console_receive_buffer(void);
 
 uint32_t timer_from_us(uint32_t us);

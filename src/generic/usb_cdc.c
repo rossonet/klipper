@@ -67,7 +67,8 @@ debug_sendf(const char *message, uint_fast8_t len)
 {
     usb_send_bulk_in((void* ) message, len);
 }
-#else
+#endif
+#ifndef CONFIG_ATSAM_SERIAL_WITH_DEBUG_OVER_USB
 // Encode and transmit a "response" message
 void
 console_sendf(const struct command_encoder *ce, va_list args)
