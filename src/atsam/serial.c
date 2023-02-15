@@ -77,7 +77,10 @@ serial_init(void)
     Port->US_IDR = 0xFFFFFFFF;
 
     // Enable uart
-    Port->US_MR = (US_MR_PAR_NO | US_MR_CHMODE_NORMAL);
+    uint32_t reg = US_MR_CHRL_8_BIT |
+        US_MR_PAR_NO |
+        US_MR_CHMODE_NORMAL;
+    Port->US_MR |= reg;
     Port->US_BRGR = get_pclock_frequency(Pmc_id) / (16 * CONFIG_SERIAL_BAUD);
     Port->US_IER = US_IER_RXRDY;
     armcm_enable_irq(USARTx_Handler, USARTx_IRQn, 0);
